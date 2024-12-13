@@ -3,26 +3,29 @@ const router = express.Router();
 const studentService = require('../services/studentService');
 const logger = require('../utils/logger');
 
-router.post('/', async (req, res) => {
+// Get all students
+router.get('/', async (req, res) => {
   try {
-    const studentId = await studentService.insertStudent(req.body);
-    res.status(201).json({ studentId });
+    const students = await studentService.getAllStudents();
+    res.json(students);
   } catch (err) {
-    logger.error('Error creating student:', err.message);
-    res.status(500).json({ error: 'Failed to create student' });
+    logger.error('Error fetching all students:', err.message);
+    res.status(500).json({ error: 'Failed to fetch students' });
   }
 });
 
+// Get students by department
 router.get('/department/:departmentId', async (req, res) => {
   try {
     const students = await studentService.getStudentsByDepartment(parseInt(req.params.departmentId));
     res.json(students);
   } catch (err) {
-    logger.error('Error fetching students:', err.message);
+    logger.error('Error fetching students by department:', err.message);
     res.status(500).json({ error: 'Failed to fetch students' });
   }
 });
 
+// Get student by ID
 router.get('/:studentId', async (req, res) => {
   try {
     const student = await studentService.getStudentById(req.params.studentId);
@@ -33,6 +36,17 @@ router.get('/:studentId', async (req, res) => {
   } catch (err) {
     logger.error('Error fetching student:', err.message);
     res.status(500).json({ error: 'Failed to fetch student' });
+  }
+});
+
+// Create new student
+router.post('/', async (req, res) => {
+  try {
+    const studentId = await studentService.insertStudent(req.body);
+    res.status(201).json({ studentId });
+  } catch (err) {
+    logger.error('Error creating student:', err.message);
+    res.status(500).json({ error: 'Failed to create student' });
   }
 });
 

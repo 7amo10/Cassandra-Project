@@ -3,6 +3,17 @@ const { client } = require('../config/database');
 const logger = require('../utils/logger');
 
 class StudentService {
+  async getAllStudents() {
+    const query = 'SELECT * FROM students';
+    try {
+      const result = await client.execute(query, [], { prepare: true });
+      return result.rows;
+    } catch (err) {
+      logger.error('Failed to retrieve all students:', err.message);
+      throw err;
+    }
+  }
+
   async insertStudent(studentData) {
     const studentId = uuidv4();
     const query = `
@@ -36,7 +47,7 @@ class StudentService {
       const result = await client.execute(query, [departmentId], { prepare: true });
       return result.rows;
     } catch (err) {
-      logger.error('Failed to retrieve students:', err.message);
+      logger.error('Failed to retrieve students by department:', err.message);
       throw err;
     }
   }

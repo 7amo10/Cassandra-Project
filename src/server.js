@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const { connectWithRetry } = require('./config/database');
+const { createSchema } = require('./models/schema');
+const { seedData } = require('./utils/dataSeeder');
 const studentRoutes = require('./routes/studentRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const courseRoutes = require('./routes/courseRoutes');
@@ -27,6 +29,13 @@ async function startServer() {
   try {
     await connectWithRetry();
     logger.info('Connected to Cassandra successfully');
+    
+    await createSchema();
+    logger.info('Schema created successfully');
+
+    // Seed initial data
+    await seedData();
+    logger.info('Initial data seeded successfully');
     
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
