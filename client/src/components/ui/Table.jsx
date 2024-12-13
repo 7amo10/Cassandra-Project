@@ -1,4 +1,4 @@
-function Table({ headers, children }) {
+function Table({ headers, data, renderRow }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -15,11 +15,9 @@ function Table({ headers, children }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {children}
+          {data.map(renderRow)}
         </tbody>
       </table>
     </div>
   );
 }
-
-export default Table;

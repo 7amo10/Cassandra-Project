@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 
 router.get('/', async (req, res) => {
   try {
-    const departments = await departmentService.getDepartmentById(1);
+    const departments = await departmentService.getAllDepartments();
     res.json(departments);
   } catch (err) {
     logger.error('Error fetching departments:', err.message);
