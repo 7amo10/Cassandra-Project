@@ -2,48 +2,51 @@ const { client } = require('../config/database');
 const logger = require('../utils/logger');
 
 class CourseService {
-  async insertCourses(courses) {
-    const query = `
-      INSERT INTO courses (
-        dept_id, course_id, professor_id, course_code,
-        title, credits, semester, year
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
+  async getAllCourses() {
+    const query = 'SELECT * FROM courses';
     try {
-      const batchQueries = courses.map(course => ({
-        query,
-        params: [
-          course.dept_id,
-          course.course_id,
-          course.professor_id,
-          course.course_code,
-          course.title,
-          course.credits,
-          course.semester,
-          course.year
-        ]
-      }));
-
-      await client.batch(batchQueries, { prepare: true });
-      logger.info(`Successfully inserted ${courses.length} courses`);
-      return courses.length;
-    } catch (err) {
-      logger.error('Failed to insert courses:', err.message);
-      throw err;
-    }
-  }
-
-  async getCoursesByDepartment(deptId) {
-    const query = 'SELECT * FROM courses WHERE dept_id = ?';
-    try {
-      const result = await client.execute(query, [deptId], { prepare: true });
+      const result = await client.execute(query, [], { prepare: true });
       return result.rows;
     } catch (err) {
       logger.error('Failed to retrieve courses:', err.message);
       throw err;
     }
   }
-}
 
-module.exports = new CourseService();
+  async getCoursesByDepartment(departmentId) {
+    const query = 'SELECT * FROM courses WHERE department_id = ?';
+    try {
+      const result = await client.execute(query, [departmentId], { prepare: true });
+      return result.rows;
+    } catch (err) {
+      logger.error('Failed to retrieve courses by department:', err.message);
+      throw err;
+    }
+  }
+
+  async insertCourse(courseData) {
+    const query = `
+      INSERT INTO courses (
+        course_id, department_id, code, title,
+        credits, professor_id, semester, year
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    try {
+      await client.execute(query, [
+        courseData.course_id,
+        courseData.department_id,
+        courseData.code,
+        courseData.title,
+        courseData.credits,
+        courseData.professor_id,
+        courseData.semester,
+        courseData.year
+      ], { prepare: true });
+      return true;
+    } catch (err) {
+      logger.error('Failed to insert course:', err.message);
+      throw err;
+    }
+  }
+}
