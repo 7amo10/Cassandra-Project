@@ -8,46 +8,55 @@ const createSchema = async () => {
     
     'USE student_management',
     
+    // Students table - Primary partition by department_id for efficient department-based queries
     `CREATE TABLE IF NOT EXISTS students (
-      department int,
-      course int,
-      student_id int,
+      student_id uuid,
+      department_id int,
       first_name text,
       last_name text,
       email text,
       age int,
       enrollment_date timestamp,
-      PRIMARY KEY ((department, course), student_id)
+      PRIMARY KEY ((department_id), student_id)
     )`,
 
+    // Departments table
     `CREATE TABLE IF NOT EXISTS departments (
-      dept_id int,
-      dept_name text,
+      department_id int,
+      name text,
       location text,
-      head_professor_id int,
-      PRIMARY KEY (dept_id)
+      head_professor_id uuid,
+      PRIMARY KEY (department_id)
     )`,
 
+    // Courses table
     `CREATE TABLE IF NOT EXISTS courses (
-      dept_id int,
-      course_id int,
-      professor_id int,
-      course_code text,
+      course_id uuid,
+      department_id int,
+      code text,
       title text,
       credits int,
+      professor_id uuid,
       semester text,
       year int,
-      PRIMARY KEY ((dept_id, course_id))
+      PRIMARY KEY ((department_id), course_id)
     )`,
 
-    `CREATE TABLE IF NOT EXISTS enrollments (
-      enrollment_id int,
-      student_id int,
-      course_id int,
+    // Student enrollments - Track student's course enrollments
+    `CREATE TABLE IF NOT EXISTS student_enrollments (
+      student_id uuid,
+      course_id uuid,
       enrollment_date timestamp,
       status text,
-      PRIMARY KEY ((student_id, course_id))
-    )`
+      grade text,
+      PRIMARY KEY ((student_id), course_id)
+    )`,
+
+    // Secondary index for student email lookups
+    `CREATE INDEX IF NOT EXISTS idx_student_email ON students (email)`,
+
+    // Secondary index for course code lookups
+    `CREATE INDEX IF NOT EXISTS idx_course_code ON courses (code)`
   ];
 
   try {

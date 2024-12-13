@@ -3,46 +3,51 @@ const { client } = require('../config/database');
 const logger = require('../utils/logger');
 
 class StudentService {
-  async insertStudents(students) {
+  async insertStudent(studentData) {
+    const studentId = uuidv4();
     const query = `
       INSERT INTO students (
-        department, course, student_id, first_name, 
-        last_name, email, age, enrollment_date
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        student_id, department_id, first_name, last_name,
+        email, age, enrollment_date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     try {
-      const batchQueries = students.map(student => ({
-        query,
-        params: [
-          student.department,
-          student.course,
-          student.student_id,
-          student.first_name,
-          student.last_name,
-          student.email,
-          student.age,
-          student.enrollment_date
-        ]
-      }));
-
-      await client.batch(batchQueries, { prepare: true });
-      logger.info(`Successfully inserted ${students.length} students`);
-      return students.length;
+      await client.execute(query, [
+        studentId,
+        studentData.department_id,
+        studentData.first_name,
+        studentData.last_name,
+        studentData.email,
+        studentData.age,
+        new Date()
+      ], { prepare: true });
+      
+      return studentId;
     } catch (err) {
-      logger.error('Failed to insert students:', err.message);
+      logger.error('Failed to insert student:', err.message);
       throw err;
     }
   }
 
-  async getStudentsByDepartmentAndCourse(department, course) {
-    const query = 'SELECT * FROM students WHERE department = ? AND course = ?';
-    
+  async getStudentsByDepartment(departmentId) {
+    const query = 'SELECT * FROM students WHERE department_id = ?';
     try {
-      const result = await client.execute(query, [department, course], { prepare: true });
+      const result = await client.execute(query, [departmentId], { prepare: true });
       return result.rows;
     } catch (err) {
       logger.error('Failed to retrieve students:', err.message);
+      throw err;
+    }
+  }
+
+  async getStudentById(studentId) {
+    const query = 'SELECT * FROM students WHERE student_id = ? ALLOW FILTERING';
+    try {
+      const result = await client.execute(query, [studentId], { prepare: true });
+      return result.rows[0];
+    } catch (err) {
+      logger.error('Failed to retrieve student:', err.message);
       throw err;
     }
   }
