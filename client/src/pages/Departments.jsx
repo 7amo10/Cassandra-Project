@@ -27,4 +27,7 @@ function Departments() {
       />
     </div>
   );
+  
 }
+
+module.exports = {Departments}
